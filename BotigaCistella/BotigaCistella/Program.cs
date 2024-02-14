@@ -1,10 +1,13 @@
-﻿namespace BotigaCistella
+﻿using System.Text.Json;
+
+namespace BotigaCistella
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-
+            (string[] productes, int[] quantitat, int nElem, double diners) cistella = (new string[5], new int[5], 2, 10.7);
+            AmpliarCistella(ref cistella);
 
         }
 
@@ -16,28 +19,77 @@
             botiga.preu = [3, 3, 1.5, 4, 6];
             return botiga;
         }
-
+        //METODE Cistella - Afegeix un producte i una quantitat a la cistella
         static void ComprarProducte(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella, ref (string[] producte, double[] preu, int nElem) botiga ,string producte, int quantitat)
         {
-            if (ExisteixABotiga(botiga, producte))
+            int posicioProducte = ExisteixABotiga(botiga, producte);
+            if ( posicioProducte >= 0)
             {
-
+                if(cistella.productes.Length == cistella.nElem)
+                {
+                    Console.WriteLine("No et queda espai a la cistella!");
+                    AmpliarCistella(ref cistella);
+                }
+                double dinersNou = cistella.diners - botiga.preu[posicioProducte] * quantitat;
+                if(dinersNou < 0)
+                {
+                    Console.WriteLine("No tens diners, estas pobre!");
+                }
             }
             else Console.WriteLine("ERROR El producte no existeix a la botiga");
         }
+        //METODE AmpliarCistella - Amplia la cistella demanant el numero per consola
+        static void AmpliarCistella(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
+        {
+            int num;
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Quants espais vols ampliar a la botiga?");
+            } while (!int.TryParse(Console.ReadLine(), out num) || num <= 0);
+            Console.WriteLine(num);
 
+            int nouNumElem = cistella.productes.Length + cistella.nElem;
+            AmpliarProductesQuantitatCistella(ref cistella.productes, ref cistella.quantitat, nouNumElem);
+            cistella.nElem = nouNumElem;
+        }
+        //METODE AmpliarCistella - Amplia els arrays de productes i quantitat
+        static void AmpliarProductesQuantitatCistella(ref string[] productes, ref int[] quantitat, int nouNumElem)
+        {
+            string[] productesNou = new string[nouNumElem];
+            int[] quantitatNou = new int[nouNumElem];
+            for (int i = 0; i < productes.Length; i++)
+            {
+                productesNou[i] = productes[i];
+                quantitatNou[i] = quantitat[i];
+            }
+            productes = productesNou;
+            quantitat = quantitatNou;
+        }
+        //METODE AfegirDiners - Afegeix diners a la cistella
+        static void AfegirDiners(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
+        {
+            double num;
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Quants diners vols afegir?");
+            } while (!double.TryParse(Console.ReadLine(), out num) || num <= 0);
+            cistella.diners += num;
+        }
         // MÈTODE ExistexABotiga - Comprova si ja existeix el producte
-        static bool ExisteixABotiga((string[] productes, double[] preu, int nElem) botiga, string producte)
+        static int ExisteixABotiga((string[] productes, double[] preu, int nElem) botiga, string producte)
         {
             int i = 0;
             while(i < 0 && botiga.productes[i] != producte)
             {
                 i++;
             }
-            return botiga.productes[i] == producte;
+            if (botiga.productes[i] != producte) i = -1;
+            return i;
         }
 
-        // MÈTODE MostrarBotida - Mostra de forma amigable la botiga (producte + preu)
+        // MÈTODE MostrarBotiga - Mostra de forma amigable la botiga (producte + preu)
         static void MostrarBotiga((string[] producte, double[] preu, int nElem) botiga)
         {
             for (int i = 0; i < botiga.nElem; i++)
@@ -46,13 +98,13 @@
             }
         }
 
-        // MÈTODE LiniaBotida - Mostra una linia de producte + preu
+        // MÈTODE LiniaBotiga - Mostra una linia de producte + preu
         static void LiniaBotiga(string producte, double preu)
         {
             Console.Write(producte.PadRight(20, '.') + Convert.ToString(preu).PadLeft(20, '.') + " E \n");
         }
          
-        // MÈTODE AfegirProducte - Afegeix un producte a la Bogiga.
+        // MÈTODE AfegirProducte - Afegeix un producte a la Botiga.
         static void AfegirProducte(ref (string[] producte, double[] preu, int nElem) botiga)
         {
             string nouProducte;
