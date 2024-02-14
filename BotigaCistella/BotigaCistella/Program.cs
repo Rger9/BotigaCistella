@@ -4,15 +4,28 @@
     {
         static void Main(string[] args)
         {
+            (string[] productes, double[] preu, int nElem) botiga = Botiga();
+            MostrarBotiga(botiga);
+            AfegirProducte(ref botiga);
+            MostrarBotiga(botiga);
 
 
         }
 
-        //MÈTODE Botiga - Crida a la Botida, amb tots els seus productes, preus i número d'elements
+
+        // MÈTODE UsuariBotiga - Pregunta a l'usuari si és el propietari, o un comprador. Si és el propietari preguntarà per una contrassenya
+        static void UsuariBotiga()
+        {
+            string pregunta =   "1 - Vull entrar a la botiga com a PROPIETARI" +
+                                "2 - Soc un comprador";
+            Console.WriteLine(pregunta);
+        }
+
+        // MÈTODE Botiga - Crida a la Botida, amb tots els seus productes, preus i número d'elements
         static (string[], double[], int) Botiga()
         {
             (string[] productes, double[] preu, int nElem) botiga = (new string[5], new double[5], 5);
-            botiga.productes = ["Durum", "Kebab", "Patates", "Pizza", "Menu"];
+            botiga.productes = ["Durum", "Kebab", "Patates", "Pizza", "Me(nu"];
             botiga.preu = [3, 3, 1.5, 4, 6];
             return botiga;
         }
@@ -52,21 +65,39 @@
             Console.Write(producte.PadRight(20, '.') + Convert.ToString(preu).PadLeft(20, '.') + " E \n");
         }
          
-        // MÈTODE AfegirProducte - Afegeix un producte a la Bogiga.
+        // MÈTODE AfegirProducte - Afegeix un o molts productes a la Botiga.
         static void AfegirProducte(ref (string[] producte, double[] preu, int nElem) botiga)
         {
-            string nouProducte;
-            double nouPreu;
-            Console.WriteLine("Quin producte vols afegir?");
+            string nouProducte, nouPreu;
+            Console.WriteLine("Quin producte/productes vols afegir?");
             nouProducte = Console.ReadLine();
-            Console.WriteLine("Preu del producte?");
-            nouPreu = Convert.ToDouble(Console.ReadLine());
-
-            botiga.nElem++;
-            botiga.producte[botiga.nElem - 1] = nouProducte;
-            botiga.preu[botiga.nElem - 1] = nouPreu;
+            Console.WriteLine("Preu/Preus del producte?");
+            nouPreu = Console.ReadLine();
+            int i = botiga.nElem;
+            // nouProducte = pomes
+            // nouProducte = pomes, peres, mandarines, melons
+            while (nouProducte != "")
+            {
+                botiga.nElem++;
+                if (nouProducte.Contains(", "))
+                {
+                    botiga.producte[i] = nouProducte.Substring(0, nouProducte.IndexOf(','));
+                    nouProducte = nouProducte.Substring(nouProducte.IndexOf(',')+2);
+                    botiga.preu[i] = Convert.ToDouble(nouProducte.Substring(0, nouProducte.IndexOf(',')));
+                    nouProducte = nouProducte.Substring(nouProducte.IndexOf(", ") + 2);
+                    i++;
+                }
+                else
+                {
+                    botiga.producte[i] = nouProducte;
+                    botiga.preu[i] = Convert.ToDouble(nouPreu);
+                    nouProducte = "";
+                }
+            }
+            Console.WriteLine("Els teus productes amb els respectius preus han estat afegits a la botiga");
         }
-        
+
+                
         // MÈTODE ModificarPreu - Canvia el preu d'un producte, si existeix
         static void ModificarPreu(ref (string[] producte, double[] preu, int nElem) botiga, string producte, double preu)
         {
