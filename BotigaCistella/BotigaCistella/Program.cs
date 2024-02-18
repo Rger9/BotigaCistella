@@ -39,36 +39,72 @@ namespace BotigaCistella
             botiga.preu = [3, 3, 1.5, 4, 6];
             return botiga;
         }
-        //METODE Cistella - Afegeix un producte i una quantitat a la cistella
+        
+
+        //METODE ComprarProducte - Afegeix un producte i una quantitat a la cistella
         static void ComprarProducte(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella, ref (string[] producte, double[] preu, int nElem) botiga ,string producte, int quantitat)
         {
             int posicioProducte = ExisteixABotiga(botiga, producte);
-            if ( posicioProducte >= 0)
+            if (posicioProducte >= 0)
             {
                 if(cistella.productes.Length == cistella.nElem)
                 {
                     Console.WriteLine("No et queda espai a la cistella!");
                     AmpliarCistella(ref cistella);
                 }
-                double dinersNou = cistella.diners - botiga.preu[posicioProducte] * quantitat;
-                if (dinersNou < 0)
+                double dinersNous = cistella.diners - botiga.preu[posicioProducte] * quantitat;
+                while (dinersNous < 0)
                 {
-                    Console.WriteLine("No tens diners, estas pobre!");
-                    //AfegirDiners(cistella);
+                    Console.WriteLine($"No tens diners, estas pobre {-dinersNous} euros!");
+                    AfegirDiners(ref cistella);
                 }
-                if (ProductesPlens(botiga.producte, botiga.nElem))
-                {
-
-                }
-                else
-                {
-                    Console.WriteLine("ERROR No hi ha espai a la botiga, entra el numero de elements que hi vols ampliar");
-
-                }
+                AppendCistella(ref cistella, producte, quantitat);
+                ActualitzaDinersCistella(ref cistella, dinersNous);
             }
             else Console.WriteLine("ERROR El producte no existeix a la botiga");
         }
-
+        //METODE ComprarProducte - Afegeix una taula de productes i una taula de quantitats a la cistella, el metode acaba si hi ha algun producte que no el troba a la botiga
+        static void ComprarProducte(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella, ref (string[] producte, double[] preu, int nElem) botiga, string[] producte, int[] quantitat)
+        {
+            int[] posicioProductes = ExisteixABotiga(botiga, producte);
+            if (posicioProductes.Length == 0)
+            {
+                if (cistella.productes.Length <= cistella.nElem + producte.Length)
+                {
+                    Console.WriteLine("No et queda espai a la cistella!");
+                    AmpliarCistella(ref cistella);
+                }
+                double dinersNous = DiferenciaDiners(botiga, posicioProductes, quantitat, cistella.diners);
+                while (dinersNous < 0)
+                {
+                    Console.WriteLine($"No tens diners, estas pobre, necessites {-dinersNous} euros!");
+                    AfegirDiners(ref cistella);
+                }
+                for(int i = 0; i < producte.Length; i++)
+                {
+                    if(PosicioProducteACistella(cistella.productes, cistella.nElem, producte[i]) == -1)
+                    {
+                        AppendCistella(ref cistella, producte[i], quantitat[i]);
+                    }
+                    else
+                    {
+                        cistella.quantitat[posicioProductes[i]] += quantitat[i];
+                    }
+                }
+                ActualitzaDinersCistella(ref cistella,dinersNous);
+            }
+            else Console.WriteLine("ERROR El producte no existeix a la botiga");
+        }
+        //METODE DiferenciaDiners - Calcula la diferencia de diners que hi hauria si es compressin tots els productes de la taula productes
+        static double DiferenciaDiners((string[] producte, double[] preu, int nElem) botiga, int[] posicioProductes, int[] quantitat, double dinersActuals)
+        {
+            double dinersNous = dinersActuals;
+            for(int i = 0; i < posicioProductes.Length; i++)
+            {
+                dinersNous -= botiga.preu[posicioProductes[i]] * quantitat[i];
+            }
+            return dinersNous;
+        }
         //METODE AmpliarCistella - Amplia la cistella demanant el numero per consola
         static void AmpliarCistella(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
         {
@@ -97,63 +133,103 @@ namespace BotigaCistella
             productes = productesNou;
             quantitat = quantitatNou;
         }
-
-        // MÈTODE AmpliarBotiga - Amplia UN espai la botiga
-        static void AppendBotiga(ref (string[] productes, double[] preus, int nElem) botiga, string[] productes, double[] preus)
-        {
-            int elementsTotals = botiga.nElem + preus.Length;
-            string[] productesNou = new string[elementsTotals];
-            double[] preusNou = new double[elementsTotals];
-
-            // EX: tenim 5 productes a la botiga i volem afegir-hi 3
-            for (int i = 0; i < elementsTotals; i++)
-            {
-                if (i < botiga.nElem)
-                {
-                    // Index 0 a 4 son els productes ORIGINALS de la botiga.
-                    productesNou[i] = botiga.productes[i];
-                    preusNou[i] = botiga.preus[i];
-                }
-                else
-                {
-                    // Index 5 a 7 son els productes AFEGITS de l'usuari, els productes i - 5
-                    productesNou[i] = productes[i - botiga.nElem];
-                    preusNou[i] = preus[i - botiga.nElem];
-                }
-            }
-            botiga.productes = productesNou;
-            botiga.preus = preusNou;
-            botiga.nElem = elementsTotals;
-        }
-
         //METODE AfegirDiners - Afegeix diners a la cistella
         static void AfegirDiners(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
         {
             double num;
             do
             {
-                Console.Clear();
                 Console.WriteLine("Quants diners vols afegir?");
             } while (!double.TryParse(Console.ReadLine(), out num) || num <= 0);
             cistella.diners += num;
+        }
+        // METODE PosicioProducteACistella - Retorna la posicio del producte a la cistella, si no el troba, retorna -1
+        static int PosicioProducteACistella(string[] productesCistella, int nElem, string producte)
+        {
+            int posicio = -1, i = 0;
+            while (i < nElem && productesCistella[i] == producte) i++;
+            if (productesCistella[i] == producte) posicio = i;
+            return posicio;
+        }
+        // METODE AppendCistella - Posa un producte al final de la cistella
+        static void AppendCistella(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella, string producte, int quantitat)
+        {
+            if (cistella.nElem < cistella.productes.Length)
+            {
+                cistella.productes[cistella.nElem] = producte;
+                cistella.quantitat[cistella.nElem] = quantitat;
+                cistella.nElem++;
+            }
+            else throw new Exception("ERROR AL AFEGIR UN PRODUCTE EN APPENDCISTELLA");
+        }
+        // METODE ActualitzaDinersCistella
+        static void ActualitzaDinersCistella(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella, double dinersNous)
+        {
+            cistella.diners = dinersNous;
         }
         // MÈTODE ExistexABotiga - Comprova si ja existeix el producte
         static int ExisteixABotiga((string[] productes, double[] preu, int nElem) botiga, string producte)
         {
             int i = 0;
-            while(i < 0 && botiga.productes[i] != producte)
+            while(i < botiga.productes.Length && botiga.productes[i] != producte)
             {
                 i++;
             }
             if (botiga.productes[i] != producte) i = -1;
             return i;
         }
-
-        
-
-        static bool ProductesPlens(string[] productes, int nElem)
+        // METODE OrdenarCistella - Ordena la cistella
+        static void OrdenarCistella(string[] productes, int[] quantitat, int nElem)
         {
-            return productes.Length == nElem;
+            for(int numVolta = 0; numVolta < nElem - 1; numVolta++)
+            {
+                for(int i=0; i < nElem - 1; i++)
+                {
+                    if (productes[i].CompareTo(productes[i + 1]) > 0)
+                    {
+                        Permutar(ref productes[i], ref productes[i + 1]);
+                    }
+                }
+            }
+        }
+        // MÈTODE MostrarCistella - Mostra de forma amigable la cistella (producte + preu)
+        static void MostrarCistella((string[] productes, int[] quantitat, int nElem, double diners) cistella, (string[] productes, double[] preu, int nElem) botiga)
+        {
+            Console.WriteLine(CistellaToString(cistella, botiga));
+        }
+        // METODE CistellaToString - Retorna en forma d'string la cistella
+        static string CistellaToString((string[] productes, int[] quantitat, int nElem, double diners) cistella, (string[] productes, double[] preu, int nElem) botiga)
+        {
+            string s = "";
+            for (int i = 0; i < cistella.nElem; i++)
+            {
+                int pos = ExisteixABotiga(botiga, cistella.productes[i]);
+                int quantitatTiquet = cistella.quantitat[i];
+                double preuUnitari = botiga.preu[pos];
+                double preuTotal = quantitatTiquet * preuUnitari;
+                s += cistella.productes[i].PadRight(10, '.') + (Convert.ToString(preuUnitari) + "X" + Convert.ToString(quantitatTiquet) + ".." + Convert.ToString(preuTotal)).PadLeft(10, '.') + " E \n";
+            }
+            return s;
+        }
+
+        // MÈTODE ExistexABotiga - Comprova si ja existeixen TOTS els productes de la taula de productes entrada
+        static int[] ExisteixABotiga((string[] productes, double[] preu, int nElem) botiga, string[] producte)
+        {
+            int i = 0, j = 0;
+            int[] posicionsTrobats = new int[producte.Length];
+            while(j != -1 && i < producte.Length)
+            {
+                j = 0;
+                while (j < botiga.productes.Length && botiga.productes[j] != producte[i])
+                {
+                    j++;
+                }
+                posicionsTrobats[i] = j;
+                if (botiga.productes[j] != producte[i]) j = -1;
+                
+            }
+            if (j == -1) return new int[0];
+            return posicionsTrobats;
         }
         // MÈTODE MostrarBotiga - Mostra de forma amigable la botiga (producte + preu)
         static void MostrarBotiga((string[] producte, double[] preu, int nElem) botiga)
@@ -189,7 +265,33 @@ namespace BotigaCistella
             AppendBotiga(ref botiga, productes, preus);
             Console.WriteLine("Els teus productes amb els respectius preus han estat afegits a la botiga");
         }
-                
+        // MÈTODE AppendBotiga - Amplia UN espai la botiga
+        static void AppendBotiga(ref (string[] productes, double[] preus, int nElem) botiga, string[] productes, double[] preus)
+        {
+            int elementsTotals = botiga.nElem + preus.Length;
+            string[] productesNou = new string[elementsTotals];
+            double[] preusNou = new double[elementsTotals];
+
+            // EX: tenim 5 productes a la botiga i volem afegir-hi 3
+            for (int i = 0; i < elementsTotals; i++)
+            {
+                if (i < botiga.nElem)
+                {
+                    // Index 0 a 4 son els productes ORIGINALS de la botiga.
+                    productesNou[i] = botiga.productes[i];
+                    preusNou[i] = botiga.preus[i];
+                }
+                else
+                {
+                    // Index 5 a 7 son els productes AFEGITS de l'usuari, els productes i - 5
+                    productesNou[i] = productes[i - botiga.nElem];
+                    preusNou[i] = preus[i - botiga.nElem];
+                }
+            }
+            botiga.productes = productesNou;
+            botiga.preus = preusNou;
+            botiga.nElem = elementsTotals;
+        }
         // MÈTODE ModificarPreu - Canvia el preu d'un producte, si existeix
         static void ModificarPreu(ref (string[] producte, double[] preu, int nElem) botiga, string producte, double preu)
         {
