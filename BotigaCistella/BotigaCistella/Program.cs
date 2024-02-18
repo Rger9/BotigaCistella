@@ -9,6 +9,14 @@ namespace BotigaCistella
             (string[] productes, int[] quantitat, int nElem, double diners) cistella = (new string[5], new int[5], 2, 10.7);
             AmpliarCistella(ref cistella);
 
+            Console.WriteLine("Hello, World!");
+            (string[] productes, int[] quantitat, int nElem, double diners) cistella1 = (new string[5], new int[5], 0, 0);
+            /*
+            cistella.productes[0] = "Durum vegetal";
+            cistella.quantitat[0] = 1;
+            cistella.nElem++;
+            cistella.diners += 5.20;
+            */
         }
 
         //MÈTODE Botiga - Crida a la Botida, amb tots els seus productes, preus i número d'elements
@@ -31,9 +39,19 @@ namespace BotigaCistella
                     AmpliarCistella(ref cistella);
                 }
                 double dinersNou = cistella.diners - botiga.preu[posicioProducte] * quantitat;
-                if(dinersNou < 0)
+                if (dinersNou < 0)
                 {
                     Console.WriteLine("No tens diners, estas pobre!");
+                    //AfegirDiners(cistella);
+                }
+                if (ProductesPlens(botiga.producte, botiga.nElem))
+                {
+
+                }
+                else
+                {
+                    Console.WriteLine("ERROR No hi ha espai a la botiga, entra el numero de elements que hi vols ampliar");
+
                 }
             }
             else Console.WriteLine("ERROR El producte no existeix a la botiga");
@@ -89,6 +107,12 @@ namespace BotigaCistella
             return i;
         }
 
+        
+
+        static bool ProductesPlens(string[] productes, int nElem)
+        {
+            return productes.Length == nElem;
+        }
         // MÈTODE MostrarBotiga - Mostra de forma amigable la botiga (producte + preu)
         static void MostrarBotiga((string[] producte, double[] preu, int nElem) botiga)
         {
@@ -122,7 +146,7 @@ namespace BotigaCistella
         // MÈTODE ModificarPreu - Canvia el preu d'un producte, si existeix
         static void ModificarPreu(ref (string[] producte, double[] preu, int nElem) botiga, string producte, double preu)
         {
-            if (!ExisteixABotiga(Botiga(), producte))
+            if (ExisteixABotiga(Botiga(), producte) == -1)
             {
                 Console.WriteLine($"No s'ha trobat el producte '{producte}' a la botiga");
             }
@@ -137,7 +161,7 @@ namespace BotigaCistella
         // MÈTODE ModificarProducte - Canvia un producte antic per un de nou, si existeix
         static void ModificarProducte(ref (string[] producte, double[] preu, int nElem) botiga, string producteAntic, string producteNou)
         {
-            if (!ExisteixABotiga(Botiga(), producteAntic))
+            if (ExisteixABotiga(Botiga(), producteAntic) == -1)
             {
                 Console.WriteLine($"No s'ha trobat el producte '{producteAntic}' a la botiga");
             }
