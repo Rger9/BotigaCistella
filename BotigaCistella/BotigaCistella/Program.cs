@@ -6,8 +6,11 @@ namespace BotigaCistella
     {
         static void Main(string[] args)
         {
-            (string[] productes, int[] quantitat, int nElem, double diners) cistella = (new string[5], new int[5], 2, 10.7);
-            AmpliarCistella(ref cistella);
+            (string[] productes, double[] preu, int nElem) botiga = Botiga();
+            MostrarBotiga(botiga);
+            AfegirProducte(ref botiga);
+            MostrarBotiga(botiga);
+
 
             Console.WriteLine("Hello, World!");
             (string[] productes, int[] quantitat, int nElem, double diners) cistella1 = (new string[5], new int[5], 0, 0);
@@ -19,7 +22,16 @@ namespace BotigaCistella
             */
         }
 
-        //MÈTODE Botiga - Crida a la Botida, amb tots els seus productes, preus i número d'elements
+
+        // MÈTODE UsuariBotiga - Pregunta a l'usuari si és el propietari, o un comprador. Si és el propietari preguntarà per una contrassenya
+        static void UsuariBotiga()
+        {
+            string pregunta =   "1 - Vull entrar a la botiga com a PROPIETARI" +
+                                "2 - Soc un comprador";
+            Console.WriteLine(pregunta);
+        }
+
+        // MÈTODE Botiga - Crida a la Botida, amb tots els seus productes, preus i número d'elements
         static (string[], double[], int) Botiga()
         {
             (string[] productes, double[] preu, int nElem) botiga = (new string[5], new double[5], 5);
@@ -56,6 +68,7 @@ namespace BotigaCistella
             }
             else Console.WriteLine("ERROR El producte no existeix a la botiga");
         }
+
         //METODE AmpliarCistella - Amplia la cistella demanant el numero per consola
         static void AmpliarCistella(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
         {
@@ -84,6 +97,35 @@ namespace BotigaCistella
             productes = productesNou;
             quantitat = quantitatNou;
         }
+
+        // MÈTODE AmpliarBotiga - Amplia UN espai la botiga
+        static void AppendBotiga(ref (string[] productes, double[] preus, int nElem) botiga, string[] productes, double[] preus)
+        {
+            int elementsTotals = botiga.nElem + preus.Length;
+            string[] productesNou = new string[elementsTotals];
+            double[] preusNou = new double[elementsTotals];
+
+            // EX: tenim 5 productes a la botiga i volem afegir-hi 3
+            for (int i = 0; i < elementsTotals; i++)
+            {
+                if (i < botiga.nElem)
+                {
+                    // Index 0 a 4 son els productes ORIGINALS de la botiga.
+                    productesNou[i] = botiga.productes[i];
+                    preusNou[i] = botiga.preus[i];
+                }
+                else
+                {
+                    // Index 5 a 7 son els productes AFEGITS de l'usuari, els productes i - 5
+                    productesNou[i] = productes[i - botiga.nElem];
+                    preusNou[i] = preus[i - botiga.nElem];
+                }
+            }
+            botiga.productes = productesNou;
+            botiga.preus = preusNou;
+            botiga.nElem = elementsTotals;
+        }
+
         //METODE AfegirDiners - Afegeix diners a la cistella
         static void AfegirDiners(ref (string[] productes, int[] quantitat, int nElem, double diners) cistella)
         {
@@ -128,21 +170,26 @@ namespace BotigaCistella
             Console.Write(producte.PadRight(20, '.') + Convert.ToString(preu).PadLeft(20, '.') + " E \n");
         }
          
-        // MÈTODE AfegirProducte - Afegeix un producte a la Botiga.
+
+        // MÈTODE AfegirProducte - Afegeix un o molts productes a la Botiga.
         static void AfegirProducte(ref (string[] producte, double[] preu, int nElem) botiga)
         {
-            string nouProducte;
-            double nouPreu;
-            Console.WriteLine("Quin producte vols afegir?");
-            nouProducte = Console.ReadLine();
-            Console.WriteLine("Preu del producte?");
-            nouPreu = Convert.ToDouble(Console.ReadLine());
+            string producteFrase, preuFrase;
+            Console.WriteLine("Quin producte/productes vols afegir? FORMAT: 'pomes, peres, cireres, melons'");
+            producteFrase = Console.ReadLine();
+            // FORMAT: macarrons, pomes, peres
+            string[] productes = producteFrase.Split(", ");
+            Console.WriteLine("Preu/Preus del producte? FORMAT: '2, 2,5, 3, 3,5'");
+            preuFrase = Console.ReadLine();
+            //FORMAT: 1.5, 2, 3
 
-            botiga.nElem++;
-            botiga.producte[botiga.nElem - 1] = nouProducte;
-            botiga.preu[botiga.nElem - 1] = nouPreu;
+            // Hem tret aquesta línia de codi d'internet, Fa un split de la linia de preus i la converteix a un Array de Double.
+            double[] preus = Array.ConvertAll(preuFrase.Split(", "), new Converter<string, double>(Double.Parse));
+
+            AppendBotiga(ref botiga, productes, preus);
+            Console.WriteLine("Els teus productes amb els respectius preus han estat afegits a la botiga");
         }
-        
+                
         // MÈTODE ModificarPreu - Canvia el preu d'un producte, si existeix
         static void ModificarPreu(ref (string[] producte, double[] preu, int nElem) botiga, string producte, double preu)
         {
